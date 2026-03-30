@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CipherShield</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b14;
+    --panel: #0e1221;
+    --card: #111827;
+    --border: #1c2540;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --text: #e2e8f0;
+    --muted: #4a5568;
+    --success: #22c55e;
+    --error: #ef4444;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,229,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%);
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .logo-hex {
+    font-size: 40px;
+    color: var(--accent);
+    font-family: var(--mono);
+    display: block;
+    margin-bottom: 8px;
+    text-shadow: 0 0 24px rgba(0,229,255,0.3);
+  }
+  .logo-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+  .logo-sub {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  /* ── Mode Toggle ── */
+  .mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    background: var(--panel);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 7px;
+    font-family: var(--mono);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: #080b14;
+    font-weight: 700;
+    box-shadow: 0 0 16px rgba(0,229,255,0.25);
+  }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 20px; }
+  .label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* Drop Zone */
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--panel);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .drop-text { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .drop-text span { color: var(--accent); }
+  .file-selected {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--accent); margin-top: 6px; display: none;
+  }
+
+  /* Password */
+  .pass-wrap {
+    position: relative;
+  }
+  .pass-wrap input {
+    width: 100%;
+    padding: 12px 44px 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .pass-wrap input:focus { border-color: var(--accent); }
+  .eye-btn {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 16px;
+    transition: color 0.2s;
+    padding: 4px;
+  }
+  .eye-btn:hover { color: var(--accent); }
+
+  /* ── Shift Selector ── */
+  .shift-selector {
+    display: flex;
+    gap: 8px;
+  }
+  .shift-btn {
+    flex: 1;
+    padding: 9px 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.04em;
+  }
+  .shift-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .shift-btn.active {
+    background: rgba(0,229,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .shift-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Progress ── */
+  .progress-wrap { margin-bottom: 20px; display: none; }
+  .progress-bar-track {
+    height: 4px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* ── Run Button ── */
+  .run-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #080b14;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .run-btn:hover:not(:disabled) {
+    box-shadow: 0 0 28px rgba(0,229,255,0.35);
+    transform: translateY(-1px);
+  }
+  .run-btn:disabled {
+    opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+
+  /* ── Status ── */
+  .status {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: center;
+    min-height: 18px;
+    transition: color 0.2s;
+  }
+  .status.ok { color: var(--success); }
+  .status.err { color: var(--error); }
+  .status.info { color: var(--muted); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #1e2740;
+    text-align: center;
+    letter-spacing: 0.12em;
+  }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid #080b14;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo-hex">⬡</span>
+  <div class="logo-title">CipherShield</div>
+  <div class="logo-sub">XOR · Bitwise Shift · Dynamic Key Scheduling</div>
+</div>
+
+<div class="card">
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-encrypt" onclick="setMode('encrypt')">🔐 Encrypt</button>
+    <button class="mode-btn" id="btn-decrypt" onclick="setMode('decrypt')">🔓 Decrypt</button>
+  </div>
+
+  <!-- File Drop Zone -->
+  <div class="field">
+    <label class="label">Input File</label>
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" onchange="onFileChange(this)"/>
+      <span class="drop-icon">📂</span>
+      <div class="drop-text">Drop a file here or <span>browse</span></div>
+      <div class="file-selected" id="file-name"></div>
+    </div>
+  </div>
+
+  <!-- Password -->
+  <div class="field">
+    <label class="label">Password</label>
+    <div class="pass-wrap">
+      <input type="password" id="password" placeholder="Enter your secret key…"/>
+      <button class="eye-btn" onclick="togglePass()" id="eye-btn" title="Show/hide password">👁</button>
+    </div>
+  </div>
+
+  <!-- Shift Bits -->
+  <div class="field">
+    <label class="label">Shift Bits</label>
+    <div class="shift-selector" id="shift-selector">
+      <button class="shift-btn" data-val="1" onclick="setShift(1)">1 bit</button>
+      <button class="shift-btn" data-val="2" onclick="setShift(2)">2 bits</button>
+      <button class="shift-btn active" data-val="3" onclick="setShift(3)">3 bits</button>
+      <button class="shift-btn" data-val="4" onclick="setShift(4)">4 bits</button>
+    </div>
+    <div class="shift-hint" id="shift-hint">Left shift ×3 on encrypt, right shift ×1 on decrypt</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label" id="progress-label">Processing…</div>
+  </div>
+
+  <!-- Run -->
+  <button class="run-btn" id="run-btn" onclick="run()">▶ Run Encryption</button>
+
+  <!-- Status -->
+  <div class="status info" id="status"></div>
+
+</div>
+
+<div class="footer">CIPHERSHIELD v1.0 · FLASK + PYTHON · BITWISE ENCRYPTION</div>
+
+<script>
+  let currentMode = 'encrypt';
+  let selectedFile = null;
+  let currentShift = 3;
+
+  const shiftHints = {
+    1: 'Left shift ×1 on encrypt, right shift ×1 on decrypt',
+    2: 'Left shift ×2 on encrypt, right shift ×1 on decrypt',
+    3: 'Left shift ×3 on encrypt, right shift ×1 on decrypt',
+    4: 'Left shift ×4 on encrypt, right shift ×2 on decrypt',
+  };
+
+  function setShift(val) {
+    currentShift = val;
+    document.querySelectorAll('.shift-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.val) === val);
+    });
+    document.getElementById('shift-hint').textContent = shiftHints[val];
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('btn-encrypt').classList.toggle('active', mode === 'encrypt');
+    document.getElementById('btn-decrypt').classList.toggle('active', mode === 'decrypt');
+    document.getElementById('run-btn').textContent =
+      mode === 'encrypt' ? '▶ Run Encryption' : '▶ Run Decryption';
+    setStatus('', '');
+
+    // Reset file
+    selectedFile = null;
+    document.getElementById('file-input').value = '';
+    const nameEl = document.getElementById('file-name');
+    nameEl.textContent = '';
+    nameEl.style.display = 'none';
+
+    // Reset password
+    const passEl = document.getElementById('password');
+    passEl.value = '';
+    passEl.type = 'password';
+
+    // Reset shift to default (3)
+    setShift(3);
+  }
+
+  function onFileChange(input) {
+    selectedFile = input.files[0] || null;
+    const nameEl = document.getElementById('file-name');
+    if (selectedFile) {
+      nameEl.textContent = '📄 ' + selectedFile.name + ' (' + formatSize(selectedFile.size) + ')';
+      nameEl.style.display = 'block';
+    } else {
+      nameEl.style.display = 'none';
+    }
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  function togglePass() {
+    const inp = document.getElementById('password');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status ' + (type || 'info');
+  }
+
+  function setProgress(visible, pct) {
+    const wrap = document.getElementById('progress-wrap');
+    const fill = document.getElementById('progress-fill');
+    const label = document.getElementById('progress-label');
+    wrap.style.display = visible ? 'block' : 'none';
+    fill.style.width = pct + '%';
+    label.textContent = pct < 100 ? 'Processing…' : 'Done!';
+  }
+
+  async function run() {
+    if (!selectedFile) { setStatus('⚠ Please select a file.', 'err'); return; }
+    const pwd = document.getElementById('password').value;
+    if (!pwd) { setStatus('⚠ Please enter a password.', 'err'); return; }
+
+    const btn = document.getElementById('run-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Processing…';
+    setProgress(true, 30);
+    setStatus('Working…', 'info');
+
+    const form = new FormData();
+    form.append('file', selectedFile);
+    form.append('password', pwd);
+    form.append('mode', currentMode);
+    form.append('shift', currentShift);
+
+    try {
+      setProgress(true, 60);
+      const resp = await fetch('/process', { method: 'POST', body: form });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || 'Server error');
+      }
+
+      setProgress(true, 90);
+
+      // Extract filename from Content-Disposition
+      const cd = resp.headers.get('Content-Disposition') || '';
+      let outName = 'output';
+      const match = cd.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match) outName = match[1].replace(/['"]/g, '');
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = outName; a.click();
+      URL.revokeObjectURL(url);
+
+      setProgress(true, 100);
+      const action = currentMode === 'encrypt' ? 'encrypted' : 'decrypted';
+      setStatus('✅ File ' + action + ' successfully! Download started.', 'ok');
+
+    } catch (e) {
+      setProgress(false, 0);
+      setStatus('❌ ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = currentMode === 'encrypt' ? '▶ Run Encryption' : '▶ Run Decryption';
+      setTimeout(() => setProgress(false, 0), 2000);
+    }
+  }
+
+  // Drag and drop
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      selectedFile = f;
+      document.getElementById('file-input').files = e.dataTransfer.files;
+      onFileChange({ files: [f] });
+    }
+  });
+</script>
+</body>
+</html>
