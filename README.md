@@ -159,4 +159,15 @@ This project is licensed under the MIT License.
 
 ---
 
+# Demo
 
+Application Interface:
+![Interface](ss/interface.png)
+
+Encryption Result:
+![Interface](ss/encryption.png)
+
+Decrption Result:
+![Interface](ss/decryption.png)
+
+---
